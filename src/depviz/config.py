@@ -17,7 +17,7 @@ REQUIRED_KEYS = (
     "package_version",
     "ascii_tree",
 )
-OPTIONAL_KEYS = ()
+OPTIONAL_KEYS = ("reverse_mode",)
 ROW_LENGTH = 2
 TRUE_WORDS = ("true", "yes", "1", "да")
 FALSE_WORDS = ("false", "no", "0", "нет")
@@ -40,6 +40,7 @@ class Config:
     test_mode: bool
     package_version: str
     ascii_tree: bool
+    reverse_mode: bool = False
 
     def as_items(self):
         """Вернуть список пар (параметр, значение) для вывода."""
@@ -130,6 +131,9 @@ def load_config(path):
     check_keys(params)
     test_mode = parse_bool("test_mode", params["test_mode"])
     ascii_tree = parse_bool("ascii_tree", params["ascii_tree"])
+    reverse_mode = parse_bool(
+        "reverse_mode", params.get("reverse_mode", "false")
+    )
     check_package_name(params["package_name"], test_mode)
     check_repository(params["repository"], test_mode)
     check_version(params["package_version"], test_mode)
@@ -139,4 +143,5 @@ def load_config(path):
         test_mode=test_mode,
         package_version=params["package_version"],
         ascii_tree=ascii_tree,
+        reverse_mode=reverse_mode,
     )
