@@ -1,0 +1,6 @@
+parameter,value
+package_name,libssl3t64
+repository,examples/Packages_sample
+test_mode,false
+package_version,3.0.13-0ubuntu3
+ascii_tree,true

@@ -3,11 +3,15 @@
 import sys
 
 from depviz.apt_repo import AptRepository, RepositoryError
+from depviz.ascii_tree import render_tree
 from depviz.config import ConfigError, load_config
 from depviz.graph import build_graph, find_cycle, reverse_dependencies
+from depviz.mermaid import RenderError, render_image, show_image, to_mermaid
 from depviz.test_repo import TestRepository
 
 DEFAULT_CONFIG = "config.csv"
+MERMAID_FILE = "graph.mmd"
+IMAGE_BASE = "graph"
 EXIT_OK = 0
 EXIT_ERROR = 1
 EXIT_CONFIG_ERROR = 2
@@ -48,6 +52,23 @@ def print_reverse(graph):
         print("  " + ", ".join(users))
 
 
+def visualize(graph):
+    """Сохранить диаграмму Mermaid, построить изображение и открыть его."""
+    text = to_mermaid(graph)
+    print("Описание графа на языке Mermaid:")
+    print(text)
+    with open(MERMAID_FILE, "w", encoding="utf-8") as file:
+        file.write(text)
+    try:
+        image = render_image(text, IMAGE_BASE, f"Граф {graph.root}")
+    except RenderError as error:
+        print(f"Изображение не построено: {error}", file=sys.stderr)
+        print(f"Текст диаграммы сохранён в {MERMAID_FILE}.")
+        return
+    print(f"Изображение графа сохранено в {image}")
+    show_image(image)
+
+
 def run(config):
     """Выполнить анализ по готовой конфигурации."""
     repo = open_repository(config)
@@ -56,6 +77,10 @@ def run(config):
         return
     graph = build_graph(repo, config.package_name, config.package_version)
     print_graph(graph)
+    if config.ascii_tree:
+        print("ASCII-дерево зависимостей:")
+        print("\n".join(render_tree(graph)))
+    visualize(graph)
 
 
 def main(argv):
