@@ -1,0 +1,6 @@
+parameter,value
+package_name,curl
+repository,examples/Packages_sample
+test_mode,false
+package_version,8.5.0-2ubuntu10
+ascii_tree,false
