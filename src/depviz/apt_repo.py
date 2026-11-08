@@ -110,6 +110,10 @@ class AptRepository:
             raise RepositoryError(f"в {source} не найдено описаний пакетов")
         return repo
 
+    def all_packages(self):
+        """Вернуть имена всех пакетов индекса."""
+        return list(self.packages)
+
     def versions(self, name):
         """Вернуть список доступных версий пакета."""
         return [s.get("Version", "") for s in self.packages.get(name, [])]

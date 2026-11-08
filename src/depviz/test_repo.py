@@ -64,6 +64,10 @@ class TestRepository:
         """Вернуть имя пакета, если он есть в репозитории."""
         return name if name in self.graph else None
 
+    def all_packages(self):
+        """Вернуть имена всех пакетов репозитория."""
+        return list(self.graph)
+
     def direct_dependencies(self, name, version=None):
         """Вернуть прямые зависимости пакета (версия не учитывается)."""
         if name not in self.graph:

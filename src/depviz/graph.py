@@ -76,3 +76,40 @@ def find_cycle(edges, start):
             path.append(nxt)
             stack.append(iter(edges.get(nxt, [])))
     return []
+
+
+def build_reverse_index(repo):
+    """Построить словарь пакет -> пакеты, которые от него зависят."""
+    reverse = {}
+    for name in repo.all_packages():
+        for dep in repo.direct_dependencies(name):
+            real = repo.resolve(dep) or dep
+            users = reverse.setdefault(real, [])
+            if name not in users:
+                users.append(name)
+    return reverse
+
+
+def reverse_dependencies(repo, target):
+    """Найти все пакеты, зависящие от target (BFS без рекурсии).
+
+    Используется тот же обход в ширину, что и для прямых
+    зависимостей, но по обратным рёбрам.
+    """
+    start = repo.resolve(target) or target
+    reverse = build_reverse_index(repo)
+    if start not in reverse and repo.resolve(target) is None:
+        raise RepositoryError(f"пакет {target} не найден в репозитории")
+    graph = DependencyGraph(root=start)
+    queue = deque([start])
+    visited = {start}
+    while queue:
+        name = queue.popleft()
+        graph.order.append(name)
+        users = reverse.get(name, [])
+        graph.edges[name] = list(users)
+        for user in users:
+            if user not in visited:
+                visited.add(user)
+                queue.append(user)
+    return graph
