@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 from depviz.apt_repo import AptRepository, RepositoryError
-from depviz.graph import build_graph, find_cycle
+from depviz.graph import build_graph, find_cycle, reverse_dependencies
 from depviz.test_repo import TestRepository
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -77,6 +77,40 @@ class GraphTest(unittest.TestCase):
         self.assertIn("perl-base", graph.order)
         cycle = find_cycle(graph.edges, "curl")
         self.assertEqual(cycle, ["libc6", "libgcc-s1", "libc6"])
+
+
+class ReverseTest(unittest.TestCase):
+    """Обратные зависимости."""
+
+    def test_reverse_simple(self):
+        """От D зависят B и C напрямую и A транзитивно."""
+        repo = TestRepository.load(
+            os.path.join(EXAMPLES, "repo_simple.txt"))
+        graph = reverse_dependencies(repo, "D")
+        self.assertEqual(graph.order, ["D", "B", "C", "A"])
+
+    def test_reverse_cycle(self):
+        """В цикле от A зависят все участники цикла."""
+        graph = reverse_dependencies(repo_from_text("A: B\nB: C\nC: A\n"),
+                                     "A")
+        self.assertEqual(sorted(graph.order), ["A", "B", "C"])
+
+    def test_reverse_leaf_root(self):
+        """От корневого пакета никто не зависит."""
+        graph = reverse_dependencies(repo_from_text("A: B\nB:\n"), "A")
+        self.assertEqual(graph.order, ["A"])
+
+    def test_reverse_unknown(self):
+        """Пакет, которого нет нигде, — ошибка."""
+        with self.assertRaises(RepositoryError):
+            reverse_dependencies(repo_from_text("A:\n"), "Z")
+
+    def test_reverse_apt(self):
+        """От libkrb5support0 зависят библиотеки Kerberos и curl."""
+        repo = AptRepository.load(os.path.join(EXAMPLES, "Packages_sample"))
+        graph = reverse_dependencies(repo, "libkrb5support0")
+        self.assertIn("libgssapi-krb5-2", graph.order)
+        self.assertIn("curl", graph.order)
 
 
 if __name__ == "__main__":

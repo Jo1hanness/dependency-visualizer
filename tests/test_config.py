@@ -113,6 +113,12 @@ class ConfigTest(unittest.TestCase):
                 test_mode="false",
             ))
 
+    def test_reverse_mode_optional(self):
+        """reverse_mode необязателен и по умолчанию выключен."""
+        self.assertFalse(self.load(base_rows()).reverse_mode)
+        config = self.load(base_rows() + [("reverse_mode", "true")])
+        self.assertTrue(config.reverse_mode)
+
     def test_bad_version(self):
         """Версия с недопустимыми символами — ошибка."""
         with self.assertRaises(ConfigError):
