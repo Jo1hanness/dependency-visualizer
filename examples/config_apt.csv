@@ -1,0 +1,6 @@
+parameter,value
+package_name,curl
+repository,http://archive.ubuntu.com/ubuntu/dists/noble/main/binary-amd64/Packages.gz
+test_mode,false
+package_version,8.5.0-2ubuntu10
+ascii_tree,false

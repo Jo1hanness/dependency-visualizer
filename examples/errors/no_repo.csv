@@ -1,0 +1,6 @@
+parameter,value
+package_name,A
+repository,examples/no_such_file.txt
+test_mode,true
+package_version,
+ascii_tree,false

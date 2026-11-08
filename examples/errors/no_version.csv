@@ -1,0 +1,6 @@
+parameter,value
+package_name,curl
+repository,http://example.com/Packages
+test_mode,false
+package_version,
+ascii_tree,false
