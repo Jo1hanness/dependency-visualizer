@@ -4,6 +4,8 @@ import sys
 
 from depviz.apt_repo import AptRepository, RepositoryError
 from depviz.config import ConfigError, load_config
+from depviz.graph import build_graph, find_cycle
+from depviz.test_repo import TestRepository
 
 DEFAULT_CONFIG = "config.csv"
 EXIT_OK = 0
@@ -11,18 +13,34 @@ EXIT_ERROR = 1
 EXIT_CONFIG_ERROR = 2
 
 
-def print_direct_dependencies(config):
-    """Вывести прямые зависимости пакета из репозитория apt."""
-    repo = AptRepository.load(config.repository)
-    deps = repo.direct_dependencies(
-        config.package_name, config.package_version
-    )
-    title = f"{config.package_name} {config.package_version}"
-    print(f"Прямые зависимости {title}:")
-    for dep in deps:
-        print(f"  {dep}")
-    if not deps:
-        print("  (нет зависимостей)")
+def open_repository(config):
+    """Открыть тестовый репозиторий или индекс apt."""
+    if config.test_mode:
+        return TestRepository.load(config.repository)
+    return AptRepository.load(config.repository)
+
+
+def print_graph(graph):
+    """Вывести граф списком смежности, отсутствующие пакеты и цикл."""
+    print(f"Граф зависимостей {graph.root} (обход BFS):")
+    for name in graph.order:
+        deps = ", ".join(graph.edges[name]) or "—"
+        print(f"  {name} -> {deps}")
+    if graph.missing:
+        missing = ", ".join(sorted(graph.missing))
+        print(f"Нет в репозитории: {missing}")
+    cycle = find_cycle(graph.edges, graph.root)
+    if cycle:
+        print("Обнаружен цикл: " + " -> ".join(cycle))
+    else:
+        print("Циклических зависимостей нет.")
+
+
+def run(config):
+    """Выполнить анализ по готовой конфигурации."""
+    repo = open_repository(config)
+    graph = build_graph(repo, config.package_name, config.package_version)
+    print_graph(graph)
 
 
 def main(argv):
@@ -33,11 +51,8 @@ def main(argv):
     except ConfigError as error:
         print(f"Ошибка конфигурации: {error}", file=sys.stderr)
         return EXIT_CONFIG_ERROR
-    if config.test_mode:
-        print("Тестовый режим поддерживается начиная с этапа 3.")
-        return EXIT_OK
     try:
-        print_direct_dependencies(config)
+        run(config)
     except RepositoryError as error:
         print(f"Ошибка репозитория: {error}", file=sys.stderr)
         return EXIT_ERROR

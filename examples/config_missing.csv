@@ -1,0 +1,6 @@
+parameter,value
+package_name,A
+repository,examples/repo_missing.txt
+test_mode,true
+package_version,
+ascii_tree,false
