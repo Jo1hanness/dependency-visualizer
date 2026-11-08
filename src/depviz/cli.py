@@ -4,7 +4,7 @@ import sys
 
 from depviz.apt_repo import AptRepository, RepositoryError
 from depviz.config import ConfigError, load_config
-from depviz.graph import build_graph, find_cycle
+from depviz.graph import build_graph, find_cycle, reverse_dependencies
 from depviz.test_repo import TestRepository
 
 DEFAULT_CONFIG = "config.csv"
@@ -36,9 +36,24 @@ def print_graph(graph):
         print("Циклических зависимостей нет.")
 
 
+def print_reverse(graph):
+    """Вывести пакеты, которые зависят от заданного."""
+    users = graph.order[1:]
+    print(f"Обратные зависимости {graph.root} (обход BFS):")
+    for name in graph.order:
+        if graph.edges[name]:
+            print(f"  {name} <- " + ", ".join(graph.edges[name]))
+    print(f"Всего зависящих пакетов: {len(users)}")
+    if users:
+        print("  " + ", ".join(users))
+
+
 def run(config):
     """Выполнить анализ по готовой конфигурации."""
     repo = open_repository(config)
+    if config.reverse_mode:
+        print_reverse(reverse_dependencies(repo, config.package_name))
+        return
     graph = build_graph(repo, config.package_name, config.package_version)
     print_graph(graph)
 

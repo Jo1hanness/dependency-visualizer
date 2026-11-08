@@ -1,0 +1,7 @@
+parameter,value
+package_name,J
+repository,examples/repo_big.txt
+test_mode,true
+package_version,
+ascii_tree,false
+reverse_mode,true

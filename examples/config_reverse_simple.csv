@@ -1,0 +1,7 @@
+parameter,value
+package_name,D
+repository,examples/repo_simple.txt
+test_mode,true
+package_version,
+ascii_tree,false
+reverse_mode,true

@@ -1,0 +1,7 @@
+parameter,value
+package_name,libc6
+repository,examples/Packages_sample
+test_mode,false
+package_version,2.39-0ubuntu8
+ascii_tree,false
+reverse_mode,true
